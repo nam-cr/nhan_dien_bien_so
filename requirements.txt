@@ -6,7 +6,7 @@
 unsloth
 ultralytics
 streamlit
-opencv-python
+opencv-python-headless
 pillow
 datasets
 transformers

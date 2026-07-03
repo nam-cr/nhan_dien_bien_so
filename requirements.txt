@@ -1,0 +1,16 @@
+# pip uninstall torch torchvision torchaudio -y
+# pip install torch==2.8.0+cu128 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128 (Tìm và chọn phiên bản phù hợp với cấu hình máy tính cá nhân của bạn)
+# pip install git+https://github.com/unslothai/unsloth.git
+# pip install git+https://github.com/unslothai/unsloth_zoo.git
+
+unsloth
+ultralytics
+streamlit
+opencv-python
+pillow
+datasets
+transformers
+trl
+qwen-vl-utils
+supervision
+fast-plate-ocr[onnx]

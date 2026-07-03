@@ -208,14 +208,32 @@ process_every_n_frame = st.sidebar.slider("Process every N-th frame (video)", 1,
 # IMAGE UPLOAD
 # ----------------------------
 if mode == "Image Upload":
-    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-    if uploaded_file is not None:
-        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-        plates = recognizer.detect_plates(image)
+    test_files = []
+    if os.path.exists("img_test"):
+        test_files = sorted([f for f in os.listdir("img_test") if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+
+    source_type = st.radio("Chọn nguồn ảnh:", ("Tải ảnh lên", "Chọn ảnh mẫu từ img_test"))
+    
+    selected_image = None
+    if source_type == "Tải ảnh lên":
+        uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+        if uploaded_file is not None:
+            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+            selected_image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    else:
+        if test_files:
+            selected_file = st.selectbox("Chọn ảnh mẫu:", test_files)
+            if selected_file:
+                img_path = os.path.join("img_test", selected_file)
+                selected_image = cv2.imread(img_path)
+        else:
+            st.warning("Thư mục img_test trống hoặc không tồn tại.")
+
+    if selected_image is not None:
+        plates = recognizer.detect_plates(selected_image)
         col1, col2 = st.columns([1, 1])
         with col1:
-            st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), caption="Original image", width="stretch")
+            st.image(cv2.cvtColor(selected_image, cv2.COLOR_BGR2RGB), caption="Original image", width="stretch")
         with col2:
             if not plates:
                 st.warning("No plates detected.")
@@ -246,13 +264,30 @@ if mode == "Image Upload":
 # VIDEO UPLOAD
 # ----------------------------
 elif mode == "Video Upload":
-    uploaded_video = st.file_uploader("Upload a video", type=["mp4", "avi", "mov", "mkv"])
-    if uploaded_video is not None:
-        tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
-        tfile.write(uploaded_video.read())
-        tfile.flush()
+    test_videos = []
+    if os.path.exists("video_test"):
+        test_videos = sorted([f for f in os.listdir("video_test") if f.lower().endswith(('.mp4', '.avi', '.mov', '.mkv'))])
 
-        cap = cv2.VideoCapture(tfile.name)
+    source_type = st.radio("Chọn nguồn video:", ("Tải video lên", "Chọn video mẫu từ video_test"))
+    
+    video_path = None
+    if source_type == "Tải video lên":
+        uploaded_video = st.file_uploader("Upload a video", type=["mp4", "avi", "mov", "mkv"])
+        if uploaded_video is not None:
+            tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+            tfile.write(uploaded_video.read())
+            tfile.flush()
+            video_path = tfile.name
+    else:
+        if test_videos:
+            selected_file = st.selectbox("Chọn video mẫu:", test_videos)
+            if selected_file:
+                video_path = os.path.join("video_test", selected_file)
+        else:
+            st.warning("Thư mục video_test trống hoặc không tồn tại.")
+
+    if video_path is not None:
+        cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
 
         # Khởi tạo các khung hiển thị trực tiếp
